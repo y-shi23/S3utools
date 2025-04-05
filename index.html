@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S3云存储</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- 头部 -->
+  <header class="header">
+    <div class="header-title workspace-selector" id="current-workspace">S3云存储</div>
+    <div class="header-controls">
+      <button id="add-config-btn" class="btn btn-outline">
+        配置
+      </button>
+    </div>
+  </header>
+
+  <!-- 主容器 -->
+  <div class="container">
+    <!-- 侧边栏折叠按钮 -->
+    <div id="sidebar-toggle" class="sidebar-toggle">
+      <span class="toggle-icon">◀</span>
+    </div>
+    
+    <!-- 侧边栏 - 存储桶列表 -->
+    <aside class="sidebar">
+      <ul id="bucket-list" class="bucket-list">
+        <!-- 存储桶将通过JavaScript动态添加 -->
+      </ul>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="spacer"></div>
+        <div class="action-buttons">
+          <div id="path-navigation" class="bucket-button">
+            <!-- 路径导航将通过JavaScript动态添加 -->
+          </div>
+          <button id="new-folder-btn" class="btn btn-outline">
+            <span>📁</span> 新建文件夹
+          </button>
+          <button id="upload-btn" class="btn btn-primary">
+            上传
+          </button>
+        </div>
+      </div>
+
+      <!-- 文件列表 -->
+      <div class="file-list-container">
+        <ul id="file-list" class="file-list">
+          <!-- 文件列表将通过JavaScript动态添加 -->
+        </ul>
+      </div>
+
+      <!-- 状态栏 -->
+      <div class="status-bar">
+        <div id="status-text">准备就绪</div>
+        <div id="status-right"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 加载中遮罩 -->
+  <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <div>正在处理，请稍候...</div>
+  </div>
+
+  <!-- 上下文菜单 -->
+  <div id="context-menu" class="context-menu" style="display: none;">
+    <!-- 上下文菜单项将通过JavaScript动态添加 -->
+  </div>
+
+  <!-- 工作空间选择模态框 -->
+  <div id="workspace-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">管理工作空间</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="workspace-list-container">
+          <ul id="workspace-list" class="workspace-list">
+            <!-- 工作空间列表将通过JavaScript动态添加 -->
+          </ul>
+        </div>
+        <div class="workspace-actions">
+          <button id="create-workspace-btn" class="btn btn-outline">
+            <span>+</span> 新建工作空间
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建工作空间模态框 -->
+  <div id="new-workspace-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">新建工作空间</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-workspace-form">
+          <div class="form-group">
+            <label for="workspace-name" class="form-label">工作空间名称</label>
+            <input type="text" id="workspace-name" class="form-control" required placeholder="输入工作空间名称">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline modal-cancel">取消</button>
+            <button type="submit" class="btn btn-primary">创建</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑工作空间模态框 -->
+  <div id="edit-workspace-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">编辑工作空间</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-workspace-form">
+          <input type="hidden" id="edit-workspace-id">
+          <div class="form-group">
+            <label for="edit-workspace-name" class="form-label">工作空间名称</label>
+            <input type="text" id="edit-workspace-name" class="form-control" required placeholder="输入工作空间名称">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="delete-workspace-btn">删除</button>
+            <button type="button" class="btn btn-outline modal-cancel">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 配置模态框 -->
+  <div id="config-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">S3配置</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="config-form">
+          <div class="form-group">
+            <label for="access-key-id" class="form-label">Access Key ID</label>
+            <input type="text" id="access-key-id" class="form-control" required placeholder="输入您的Access Key ID">
+          </div>
+          <div class="form-group">
+            <label for="secret-access-key" class="form-label">Secret Access Key</label>
+            <input type="password" id="secret-access-key" class="form-control" required placeholder="输入您的Secret Access Key">
+          </div>
+          <div class="form-group">
+            <label for="region" class="form-label">区域</label>
+            <input type="text" id="region" class="form-control" required placeholder="例如: us-east-1, ap-northeast-1">
+          </div>
+          <div class="form-group">
+            <label for="endpoint" class="form-label">自定义终端节点</label>
+            <input type="text" id="endpoint" class="form-control" required placeholder="例如: https://oss-cn-hangzhou.aliyuncs.com">
+          </div>
+          <div class="form-group">
+            <label for="download-path" class="form-label">下载路径 (可选)</label>
+            <input type="text" id="download-path" class="form-control" placeholder="默认: 系统下载文件夹">
+          </div>
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="force-path-style" checked>
+              <label for="force-path-style">使用路径样式寻址</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline modal-cancel">取消</button>
+        <button type="button" class="btn btn-primary" id="save-config-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上传文件模态框 -->
+  <div id="upload-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">上传文件</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="upload-form">
+          <div id="dropzone" class="dropzone">
+            <div class="empty-icon">📤</div>
+            <p>拖放文件到此处上传</p>
+            <p>或</p>
+            <input type="file" id="upload-files" multiple style="display: none;">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('upload-files').click()">
+              选择文件
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline modal-cancel">取消</button>
+            <button type="submit" class="btn btn-primary">上传</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建文件夹模态框 -->
+  <div id="new-folder-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">新建文件夹</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-folder-form">
+          <div class="form-group">
+            <label for="folder-name" class="form-label">文件夹名称</label>
+            <input type="text" id="folder-name" class="form-control" required placeholder="输入文件夹名称">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline modal-cancel">取消</button>
+            <button type="submit" class="btn btn-primary">创建</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 文件预览模态框 -->
+  <div id="preview-modal" class="modal-overlay" style="display: none;">
+    <div class="modal modal-fullscreen">
+      <div class="modal-header">
+        <div class="modal-title" id="preview-title">文件预览</div>
+        <div class="preview-controls">
+          <button id="download-preview-btn" class="btn btn-outline btn-sm">下载</button>
+          <button class="modal-close">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body preview-container">
+        <div id="preview-content">
+          <!-- 预览内容将动态添加 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 脚本 -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html> 

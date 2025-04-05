@@ -1,0 +1,13 @@
+{
+  "name": "utools-s3-plugin",
+  "version": "0.0.1",
+  "description": "S3云存储管理工具，支持访问、下载、上传、管理云存储",
+  "main": "index.html",
+  "scripts": {},
+  "author": "uTools开发者",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.400.0",
+    "@aws-sdk/s3-request-presigner": "^3.782.0"
+  }
+}

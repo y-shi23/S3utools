@@ -1,0 +1,20 @@
+{
+  "preload": "preload.js",
+  "main": "index.html",
+  "logo": "logo.png",
+  "features": [
+    {
+      "code": "s3",
+      "explain": "S3云存储管理工具",
+      "cmds": [
+        "S3",
+        "s3",
+        "云存储",
+        "对象存储"
+      ]
+    }
+  ],
+  "pluginSetting": {
+    "single": true
+  }
+} 
